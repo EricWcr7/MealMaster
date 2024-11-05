@@ -3,6 +3,11 @@ package app;
 import data_access.DBNoteDataAccessObject;
 import use_case.note.NoteDataAccessInterface;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
 /**
  * An application where we can view and add to a note stored by a user.
  * <p>
@@ -52,5 +57,23 @@ public class MainNoteApplication {
         builder.addNoteDAO(noteDataAccess)
                .addNoteView()
                .addNoteUseCase().build().setVisible(true);
+
+        final String url = "https://www.themealdb.com/api/json/v1/1/search.php?s";
+
+        final HttpClient client = HttpClient.newHttpClient();
+        final HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .build();
+
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(MainNoteApplication::parseAndPrintResponse)
+                .join();
+    }
+
+    private static void parseAndPrintResponse(String responseBody) {
+        System.out.println("Response from TheMealDB API:");
+        System.out.println(responseBody);
+        // Optionally, you can parse JSON here using a library like Jackson or Gson
     }
 }
